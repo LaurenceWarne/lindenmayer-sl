@@ -1,7 +1,7 @@
 // build.sc
-import mill._, scalalib._
+import mill._, scalalib._, scalafmt._
 
-object lindenmayer extends ScalaModule {
+object lindenmayer extends ScalaModule with ScalafmtModule {
   def scalaVersion = "2.13.1"
 
   object test extends Tests {
