@@ -1,7 +1,6 @@
 package lindenmayer
 
 import weaver.SimpleIOSuite
-import scala.collection.Map
 
 import ProductionRules.ProductionRules
 import Production.recurse

@@ -8,4 +8,3 @@ object RuleTranslator {
 
   type RuleTranslator = Map[Char, RuleTranslation]
 }
-

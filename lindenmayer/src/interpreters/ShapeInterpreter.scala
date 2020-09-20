@@ -1,5 +1,7 @@
 package lindenmayer.interpreters
 
+import lindenmayer.RuleTranslator._
+
 trait Interpreter[O] {
-  def Interpret(shape: String): O
+  def interpret(shape: String, translator: RuleTranslator): O
 }
