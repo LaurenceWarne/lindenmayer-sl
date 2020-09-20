@@ -2,6 +2,7 @@ package lindenmayer.interpreters
 
 import lindenmayer.interpreters.Interpreter
 import lindenmayer.RuleTranslator._
+import scala.collection.immutable.TreeSet
 
 case class GridInterpreter(
     x: Int,
@@ -17,25 +18,27 @@ case class GridInterpreter(
     shape
       .map(translator.get(_))
       .flatten
-      .foldLeft((List((x, y)), angle))(
+      .foldLeft((Set((x, y)), (x, y), angle))(
         (tuple, trans) => {
           val travelled = tuple._1
-          val position = travelled.last
-          val angle = tuple._2
+          val position = tuple._2
+          val angle = tuple._3
           trans match {
             case Turn(degrees) =>
-              (travelled, math.floorMod(angle + degrees, 360))
+              (travelled, position, math.floorMod(angle + degrees, 360))
             case Forward => {
               val nxtVector = vectorFromAngleFn(angle)
+              val nxtPos = Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
               (
-                travelled :+ (position._1 + nxtVector._1, position._2 + nxtVector._2),
+                travelled + nxtPos,
+                nxtPos,
                 angle
               )
             }
           }
         }
       )
-      ._1
+      ._1.toList
 }
 
 object GridInterpreter {
