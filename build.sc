@@ -9,6 +9,7 @@ object lindenmayer extends ScalaModule {
       ivy"com.disneystreaming::weaver-framework:0.4.3",
       ivy"com.disneystreaming::weaver-zio:0.4.3"
     )
+    // https://github.com/disneystreaming/weaver-test
     def testFrameworks = Seq("weaver.framework.TestFramework")
   }
 }

@@ -12,4 +12,3 @@ object ProductionRulesSuite extends SimpleIOSuite {
     expect(pr.get('A').get == "AA")
   }
 }
-
