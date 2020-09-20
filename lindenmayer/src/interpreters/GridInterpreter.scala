@@ -7,7 +7,7 @@ case class GridInterpreter(
     x: Int,
     y: Int,
     angle: Int = 0,
-    vectorFromAngle: Int => (Int, Int) = GridInterpreter.getVector
+    vectorFromAngleFn: Int => (Int, Int) = GridInterpreter.getVector
 ) extends Interpreter[Seq[(Int, Int)]] {
 
   override def interpret(
@@ -26,7 +26,7 @@ case class GridInterpreter(
             case Turn(degrees) =>
               (travelled, math.floorMod(angle + degrees, 360))
             case Forward => {
-              val nxtVector = vectorFromAngle(angle)
+              val nxtVector = vectorFromAngleFn(angle)
               (
                 travelled :+ (position._1 + nxtVector._1, position._2 + nxtVector._2),
                 angle
