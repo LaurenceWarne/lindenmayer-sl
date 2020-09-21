@@ -53,6 +53,29 @@ case class ListInterpreter(
     }
 }
 
+case class SetInterpreter(
+    x: Int,
+    y: Int,
+    angle: Int = 0,
+    vectorFromAngleFn: Int => (Int, Int) = GridInterpreter.getVector
+) extends BaseInterpreter[Set[(Int, Int)]] {
+ 
+ def getInit: (Set[(Int, Int)], (Int, Int), Int) =
+   (Set((x, y)), (x, y), angle)
+
+  def getNextState(translation: RuleTranslation, travelled: Set[(Int, Int)], position: (Int, Int), angle: Int): (Set[(Int, Int)], (Int, Int), Int) =
+    translation match {
+      case Turn(degrees) =>
+        (travelled, position, math.floorMod(angle + degrees, 360))
+      case Forward => {
+        val nxtVector = vectorFromAngleFn(angle)
+        val nxtPos = Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
+        (travelled + nxtPos, nxtPos, angle)
+      }
+    }
+}
+
+
 object GridInterpreter {
   val getVector: Int => (Int, Int) = angle => {
     val normalisedAngle = Math.floorMod(angle, 360)

@@ -6,7 +6,7 @@ import javax.imageio.ImageIO
 import lindenmayer.ProductionRules.ProductionRules
 import lindenmayer.Production.recurse
 import lindenmayer.interpreters.Interpreter
-import lindenmayer.interpreters.ListInterpreter
+import lindenmayer.interpreters.SetInterpreter
 import lindenmayer.RuleTranslator.{Forward, Turn}
 import lindenmayer.Recipes._
 
@@ -19,7 +19,7 @@ object ImageWriter {
     val img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
     val pr: ProductionRules = dragonCurve
     val shape: String = recurse(pr, 21, dragonCurveInit)
-    val interpreter: Interpreter[Seq[(Int, Int)]] = ListInterpreter(width/2, height/2, 90)
+    val interpreter: Interpreter[Iterable[(Int, Int)]] = SetInterpreter(width/2, height/2, 90)
     val tilesToColour: Set[(Int, Int)] = interpreter.interpret(
       shape, dragonCurveTranslator
     ).toSet
