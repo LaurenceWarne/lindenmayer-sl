@@ -1,44 +1,56 @@
 package lindenmayer.interpreters
 
 import lindenmayer.interpreters.Interpreter
-import lindenmayer.RuleTranslator._
+import lindenmayer.RuleTranslator.RuleTranslator
 import scala.collection.immutable.TreeSet
+import lindenmayer.RuleTranslation
+import lindenmayer.RuleTranslator.{Forward, Turn}
 
-case class GridInterpreter(
-    x: Int,
-    y: Int,
-    angle: Int = 0,
-    vectorFromAngleFn: Int => (Int, Int) = GridInterpreter.getVector
-) extends Interpreter[Seq[(Int, Int)]] {
+trait BaseInterpreter[C <: collection.immutable.Iterable[(Int, Int)]] extends Interpreter[C] {
+
+  def getInit: (C, (Int, Int), Int)
+
+  def getNextState(translation: RuleTranslation, travelled: C, position: (Int, Int), angle: Int): (C, (Int, Int), Int)
 
   override def interpret(
       shape: String,
       translator: RuleTranslator
-  ): Seq[(Int, Int)] =
+  ): C =
     shape
       .map(translator.get(_))
       .flatten
-      .foldLeft((Set((x, y)), (x, y), angle))(
+      .foldLeft(getInit)(
         (tuple, trans) => {
-          val travelled = tuple._1
-          val position = tuple._2
-          val angle = tuple._3
-          trans match {
-            case Turn(degrees) =>
-              (travelled, position, math.floorMod(angle + degrees, 360))
-            case Forward => {
-              val nxtVector = vectorFromAngleFn(angle)
-              val nxtPos = Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
-              (
-                travelled + nxtPos,
-                nxtPos,
-                angle
-              )
-            }
-          }
+          val travelled: C = tuple._1
+          val position: (Int, Int) = tuple._2
+          val angle: Int = tuple._3
+          getNextState(
+            trans, travelled, position, angle
+          )
         }
-      )
-      ._1.toList
+      )._1
+}
+
+case class ListInterpreter(
+    x: Int,
+    y: Int,
+    angle: Int = 0,
+    vectorFromAngleFn: Int => (Int, Int) = GridInterpreter.getVector
+) extends BaseInterpreter[List[(Int, Int)]] {
+ 
+ def getInit: (List[(Int, Int)], (Int, Int), Int) =
+   (List((x, y)), (x, y), angle)
+
+  def getNextState(translation: RuleTranslation, travelled: List[(Int, Int)], position: (Int, Int), angle: Int): (List[(Int, Int)], (Int, Int), Int) =
+    translation match {
+      case Turn(degrees) =>
+        (travelled, position, math.floorMod(angle + degrees, 360))
+      case Forward => {
+        val nxtVector = vectorFromAngleFn(angle)
+        val nxtPos = Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
+        (travelled :+ nxtPos, nxtPos, angle)
+      }
+    }
 }
 
 object GridInterpreter {
