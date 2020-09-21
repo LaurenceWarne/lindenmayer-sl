@@ -15,19 +15,15 @@ object ImageWriter {
   def main(args: Array[String]): Unit = {
     val width = if (args.length > 1) args(1).toInt else 3200
     val height = if (args.length > 2) args(2).toInt else 1800
+    val iterations = if (args.length > 3) args(3).toInt else 21
 
     val img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
     val pr: ProductionRules = dragonCurve
-    val shape: String = recurse(pr, 21, dragonCurveInit)
+    val shape: String = recurse(pr, iterations, dragonCurveInit)
     val interpreter: Interpreter[Iterable[(Int, Int)]] = SetInterpreter(width/2, height/2, 90)
     val tilesToColour: Set[(Int, Int)] = interpreter.interpret(
       shape, dragonCurveTranslator
     ).toSet
-    for (i <- 0 until width) {
-      for (j <- 0 until height) {
-        img.setRGB(i, j, 0xFFFFFF)
-      }
-    }
     val maxX = tilesToColour.map(_._1).max
     val minX = tilesToColour.map(_._1).min
     val maxY = tilesToColour.map(_._2).max
