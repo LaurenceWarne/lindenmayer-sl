@@ -1,7 +1,7 @@
 package lindenmayer
 
-import lindenmayer.ProductionRules.ProductionRules
-import lindenmayer.RuleTranslator.{RuleTranslator, Forward, Turn}
+import ProductionRules.ProductionRules
+import RuleTranslator.{RuleTranslator, Forward, Turn}
 
 object Recipes {
   // See
