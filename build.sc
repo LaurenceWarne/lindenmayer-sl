@@ -18,6 +18,9 @@ object lindenmayer extends ScalaModule with ScalafmtModule {
 object imagecmd extends ScalaModule with ScalafmtModule {
   def scalaVersion = "2.13.1"
   def moduleDeps = Seq(lindenmayer)
+  def ivyDeps = Agg(
+    ivy"dev.zio::zio:1.0.0"
+  )
 
   object test extends Tests with lindenmayerTest {
     def ivyDeps = super.ivyDeps() ++ Agg(
