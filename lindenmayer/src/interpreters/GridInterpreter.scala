@@ -11,12 +11,9 @@ trait BaseInterpreter[C <: collection.immutable.Iterable[(Int, Int)]]
 
   def getInit: (C, (Int, Int), Int)
 
-  def getNextState(
-      translation: RuleTranslation,
-      travelled: C,
-      position: (Int, Int),
-      angle: Int
-  ): (C, (Int, Int), Int)
+  def updatePosition(travelled: C, newPosition: (Int, Int)): C
+
+  def vectorFromAngleFn(angle: Int): (Int, Int)
 
   override def interpret(
       shape: String,
@@ -30,12 +27,16 @@ trait BaseInterpreter[C <: collection.immutable.Iterable[(Int, Int)]]
           val travelled: C = tuple._1
           val position: (Int, Int) = tuple._2
           val angle: Int = tuple._3
-          getNextState(
-            trans,
-            travelled,
-            position,
-            angle
-          )
+            trans match {
+              case Turn(degrees) =>
+                (travelled, position, math.floorMod(angle + degrees, 360))
+              case Forward => {
+                val nxtVector = vectorFromAngleFn(angle)
+                val nxtPos =
+                  Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
+                (updatePosition(travelled, nxtPos), nxtPos, angle)
+              }
+            }
         }
       )
       ._1
@@ -45,56 +46,32 @@ case class ListInterpreter(
     x: Int,
     y: Int,
     angle: Int = 0,
-    vectorFromAngleFn: Int => (Int, Int) = GridInterpreter.getVector
+    vectorFn: Int => (Int, Int) = GridInterpreter.getVector
 ) extends BaseInterpreter[List[(Int, Int)]] {
 
-  def getInit: (List[(Int, Int)], (Int, Int), Int) =
+  override def getInit: (List[(Int, Int)], (Int, Int), Int) =
     (List((x, y)), (x, y), angle)
 
-  def getNextState(
-      translation: RuleTranslation,
-      travelled: List[(Int, Int)],
-      position: (Int, Int),
-      angle: Int
-  ): (List[(Int, Int)], (Int, Int), Int) =
-    translation match {
-      case Turn(degrees) =>
-        (travelled, position, math.floorMod(angle + degrees, 360))
-      case Forward => {
-        val nxtVector = vectorFromAngleFn(angle)
-        val nxtPos =
-          Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
-        (travelled :+ nxtPos, nxtPos, angle)
-      }
-    }
+  override def updatePosition(travelled: List[(Int, Int)], newPosition: (Int, Int)) =
+    travelled :+ newPosition
+
+  override def vectorFromAngleFn(angle: Int) = vectorFn(angle)
 }
 
 case class SetInterpreter(
     x: Int,
     y: Int,
     angle: Int = 0,
-    vectorFromAngleFn: Int => (Int, Int) = GridInterpreter.getVector
+    vectorFn: Int => (Int, Int) = GridInterpreter.getVector
 ) extends BaseInterpreter[Set[(Int, Int)]] {
 
   def getInit: (Set[(Int, Int)], (Int, Int), Int) =
     (Set((x, y)), (x, y), angle)
 
-  def getNextState(
-      translation: RuleTranslation,
-      travelled: Set[(Int, Int)],
-      position: (Int, Int),
-      angle: Int
-  ): (Set[(Int, Int)], (Int, Int), Int) =
-    translation match {
-      case Turn(degrees) =>
-        (travelled, position, math.floorMod(angle + degrees, 360))
-      case Forward => {
-        val nxtVector = vectorFromAngleFn(angle)
-        val nxtPos =
-          Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
-        (travelled + nxtPos, nxtPos, angle)
-      }
-    }
+  override def updatePosition(travelled: Set[(Int, Int)], newPosition: (Int, Int)) =
+    travelled + newPosition
+
+  override def vectorFromAngleFn(angle: Int) = vectorFn(angle)
 }
 
 object GridInterpreter {
