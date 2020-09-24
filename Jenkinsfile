@@ -1,15 +1,15 @@
 pipeline {
-    agent {
-        docker { image 'node:14-alpine' }
-    }
+    agent { dockerfile true }
     stages {
 	stage('Compile') {
-	    sh 'mill _.compile'
+	    steps {
+		sh '/usr/bin/local/mill _.compile'
+	    }
 	}
 
         stage('Test') {
             steps {
-                sh 'mill _.test'
+                sh '/usr/bin/local/mill _.test'
             }
         }
     }
