@@ -42,11 +42,22 @@ object ImageWriter {
       width: Int,
       height: Int
   ): BufferedImage = {
-    val img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-    val maxX = cellsToColour.map(_._1).max
-    val minX = cellsToColour.map(_._1).min
-    val maxY = cellsToColour.map(_._2).max
-    val minY = cellsToColour.map(_._2).min
+    val img: BufferedImage =
+      new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+    val (maxX, minX, maxY, minY) = cellsToColour.foldLeft(
+      (Int.MinValue, Int.MaxValue, Int.MinValue, Int.MaxValue)
+    )(
+      (tuple, newCell) => {
+        val (maxX, minX, maxY, minY) = tuple
+        val (newX, newY) = newCell
+        (
+          if (newX > maxX) newX else maxX,
+          if (newX < minX) newX else minX,
+          if (newY > maxY) newY else maxY,
+          if (newY < minY) newY else minY
+        )
+      }
+    )
     val centreX = (maxX + minX) / 2
     val centreY = (maxY + minY) / 2
     cellsToColour

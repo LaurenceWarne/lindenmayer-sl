@@ -24,19 +24,17 @@ trait BaseInterpreter[C <: collection.immutable.Iterable[(Int, Int)]]
       .flatten
       .foldLeft(getInit)(
         (tuple, trans) => {
-          val travelled: C = tuple._1
-          val position: (Int, Int) = tuple._2
-          val angle: Int = tuple._3
-            trans match {
-              case Turn(degrees) =>
-                (travelled, position, math.floorMod(angle + degrees, 360))
-              case Forward => {
-                val nxtVector = vectorFromAngleFn(angle)
-                val nxtPos =
-                  Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
-                (updatePosition(travelled, nxtPos), nxtPos, angle)
-              }
+          val (travelled, position, angle) = tuple
+          trans match {
+            case Turn(degrees) =>
+              (travelled, position, math.floorMod(angle + degrees, 360))
+            case Forward => {
+              val nxtVector = vectorFromAngleFn(angle)
+              val nxtPos =
+                Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
+              (updatePosition(travelled, nxtPos), nxtPos, angle)
             }
+          }
         }
       )
       ._1
@@ -52,7 +50,10 @@ case class ListInterpreter(
   override def getInit: (List[(Int, Int)], (Int, Int), Int) =
     (List((x, y)), (x, y), angle)
 
-  override def updatePosition(travelled: List[(Int, Int)], newPosition: (Int, Int)) =
+  override def updatePosition(
+      travelled: List[(Int, Int)],
+      newPosition: (Int, Int)
+  ) =
     travelled :+ newPosition
 
   override def vectorFromAngleFn(angle: Int) = vectorFn(angle)
@@ -68,7 +69,10 @@ case class SetInterpreter(
   def getInit: (Set[(Int, Int)], (Int, Int), Int) =
     (Set((x, y)), (x, y), angle)
 
-  override def updatePosition(travelled: Set[(Int, Int)], newPosition: (Int, Int)) =
+  override def updatePosition(
+      travelled: Set[(Int, Int)],
+      newPosition: (Int, Int)
+  ) =
     travelled + newPosition
 
   override def vectorFromAngleFn(angle: Int) = vectorFn(angle)
