@@ -6,7 +6,7 @@ import lindenmayer.RuleTranslator
 
 object GridInterpreterSuite extends SimpleIOSuite {
 
-  val basicGi = ListInterpreter(0, 0, vectorFromAngleFn = _ => (1, 0))
+  val basicGi = ListInterpreter(0, 0, vectorFn = _ => (1, 0))
   val listGi = ListInterpreter(0, 0)
   val setGi = SetInterpreter(0, 0)
 
