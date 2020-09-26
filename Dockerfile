@@ -1,7 +1,7 @@
 ARG DEBIAN_VERSION=buster-slim
 ARG MILL_VERSION=0.7.4
 
-FROM debian:{DEBIAN_VERSION}
+FROM debian:${DEBIAN_VERSION}
 
 RUN apt-get update
 RUN apt-get install openjdk-8-jre

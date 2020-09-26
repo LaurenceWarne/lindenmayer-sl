@@ -9,10 +9,11 @@ import lindenmayer.interpreters.Interpreter
 import lindenmayer.interpreters.SetInterpreter
 import lindenmayer.RuleTranslator.{Forward, Turn}
 import lindenmayer.Recipes._
+import zio.{URIO, Task, ZIO, console, Runtime, ZEnv, ExitCode, RIO}
 
-object ImageWriter {
+object ImageWriter extends zio.App {
 
-  def main(args: Array[String]): Unit = {
+  override def run(args: List[String]): URIO[ZEnv, ExitCode] = {
     val width = args.lift(1).map(_.toInt).getOrElse(3200)
     val height = args.lift(2).map(_.toInt).getOrElse(1800)
     val iterations = args.lift(3).map(_.toInt).getOrElse(21)
@@ -32,9 +33,20 @@ object ImageWriter {
       .toSet
     val img = getCenteredImage(cellsToColour, width, height)
     val name: String = args.headOption.getOrElse("test.jpg")
-    writeImage(img, name)
-    // side effect
-    println(s"Wrote to $name")
+
+    // println(writeImage(img, name))
+    // // side effect
+    // val nameToConsole: ZIO[console.Console, Nothing, Unit] =
+    //   zio.console.putStr(s"Wrote to $name")
+
+    (for {
+      r <- writeImage(img, name).foldM(
+        error =>
+          console
+            .putStr(s"Error writing $name: " + error),
+        success => console.putStr(s"Wrote to $name")
+      )
+    } yield ()).exitCode
   }
 
   def getCenteredImage(
@@ -46,30 +58,31 @@ object ImageWriter {
       new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
     val (maxX, minX, maxY, minY) = cellsToColour.foldLeft(
       (Int.MinValue, Int.MaxValue, Int.MinValue, Int.MaxValue)
-    )(
-      (tuple, newCell) => {
-        val (maxX, minX, maxY, minY) = tuple
-        val (newX, newY) = newCell
-        (
-          if (newX > maxX) newX else maxX,
-          if (newX < minX) newX else minX,
-          if (newY > maxY) newY else maxY,
-          if (newY < minY) newY else minY
-        )
-      }
-    )
+    )((tuple, newCell) => {
+      val (maxX, minX, maxY, minY) = tuple
+      val (newX, newY) = newCell
+      (
+        if (newX > maxX) newX else maxX,
+        if (newX < minX) newX else minX,
+        if (newY > maxY) newY else maxY,
+        if (newY < minY) newY else minY
+      )
+    })
     val centreX = (maxX + minX) / 2
     val centreY = (maxY + minY) / 2
     cellsToColour
       .foreach(tuple => {
         val x: Int = tuple._1 - (centreX - width / 2)
         val y: Int = tuple._2 - (centreY - height / 2)
-        if (0 <= x && x < width && 0 <= y && y < height) img.setRGB(x, y, 0xFF)
+        if (0 <= x && x < width && 0 <= y && y < height) img.setRGB(x, y, 0xff)
       })
     img
   }
 
   // Side effects!
-  def writeImage(img: BufferedImage, fileName: String): Unit =
-    ImageIO.write(img, "jpg", new File(fileName))
+  def writeImage(
+      img: BufferedImage,
+      fileName: String
+  ): Task[Unit] =
+    Task.effect(ImageIO.write(img, "jpg", new File(fileName)))
 }
