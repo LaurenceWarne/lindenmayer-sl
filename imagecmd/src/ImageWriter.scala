@@ -34,7 +34,7 @@ object ImageWriter extends zio.App {
     val img = getCenteredImage(cellsToColour, width, height)
     val name: String = args.headOption.getOrElse("test.jpg")
 
-    // println(writeImage(img, name))
+    // val writeImage(img, name)
     // // side effect
     // val nameToConsole: ZIO[console.Console, Nothing, Unit] =
     //   zio.console.putStr(s"Wrote to $name")
