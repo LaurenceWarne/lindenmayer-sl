@@ -37,7 +37,7 @@ object ImageWriter extends zio.App {
     val name: String = args.headOption.getOrElse("test.jpg")
 
     val ret: ZIO[console.Console, Nothing, Unit] = writeImage(img, name)
-      .foldM(
+      .foldM( // Folds to other effects, Fold() folds to values
         e => console.putStrLn(s"Error writing to $name: $e"),
         _ => console.putStrLn(s"Wrote to $name")
       )
