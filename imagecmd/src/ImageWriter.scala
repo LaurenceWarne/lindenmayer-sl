@@ -9,7 +9,9 @@ import lindenmayer.interpreters.Interpreter
 import lindenmayer.interpreters.SetInterpreter
 import lindenmayer.RuleTranslator.{Forward, Turn}
 import lindenmayer.Recipes._
-import zio.{URIO, Task, ZIO, console, Runtime, ZEnv, ExitCode, RIO}
+import zio._
+import java.io.IOException
+import java.io.FileNotFoundException
 
 object ImageWriter extends zio.App {
 
@@ -34,19 +36,12 @@ object ImageWriter extends zio.App {
     val img = getCenteredImage(cellsToColour, width, height)
     val name: String = args.headOption.getOrElse("test.jpg")
 
-    // val writeImage(img, name)
-    // // side effect
-    // val nameToConsole: ZIO[console.Console, Nothing, Unit] =
-    //   zio.console.putStr(s"Wrote to $name")
-
-    (for {
-      r <- writeImage(img, name).foldM(
-        error =>
-          console
-            .putStr(s"Error writing $name: " + error),
-        success => console.putStr(s"Wrote to $name")
+    val ret: ZIO[console.Console, Nothing, Unit] = writeImage(img, name)
+      .foldM(
+        e => console.putStrLn(s"Error writing to $name: $e"),
+        _ => console.putStrLn(s"Wrote to $name")
       )
-    } yield ()).exitCode
+    ret.exitCode
   }
 
   def getCenteredImage(
