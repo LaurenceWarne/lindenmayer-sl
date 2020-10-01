@@ -13,7 +13,7 @@ import zio._
 import java.io.IOException
 import java.io.FileNotFoundException
 
-object ImageWriter extends zio.App {
+object ImageWriterApp extends zio.App {
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] = {
     val width = args.lift(1).map(_.toInt).getOrElse(3200)
