@@ -1,3 +1,5 @@
+package imagecmd
+
 import java.awt.image.BufferedImage
 import zio.{Has, Task, ZLayer, ZIO}
 

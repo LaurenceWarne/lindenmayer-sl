@@ -36,12 +36,22 @@ object ImageWriterApp extends zio.App {
     val img = getCenteredImage(cellsToColour, width, height)
     val name: String = args.headOption.getOrElse("test.jpg")
 
-    val ret: ZIO[console.Console, Nothing, Unit] = writeImage(img, name)
-      .foldM( // Folds to other effects, Fold() folds to values
-        e => console.putStrLn(s"Error writing to $name: $e"),
-        _ => console.putStrLn(s"Wrote to $name")
+    val ret: ZIO[console.Console with ImageWriter.ImageWriter, Nothing, Unit] =
+      ZIO
+        .accessM[ImageWriter.ImageWriter](_.get.writeImage(img, name))
+        .foldM( // Folds to other effects, Fold() folds to values
+          e => console.putStrLn(s"Error writing to $name: $e"),
+          _ => console.putStrLn(s"Wrote to $name")
+        )
+
+    // Provide environment
+    val layer: ZLayer[Any, Nothing, ImageWriter.ImageWriter] =
+      ZLayer.succeed(
+        new ImageWriterServiceImpl()
       )
-    ret.exitCode
+    val program: ZIO[Any, Nothing, Unit] =
+      ret.provideLayer(layer ++ console.Console.live)
+    program.exitCode
   }
 
   def getCenteredImage(
