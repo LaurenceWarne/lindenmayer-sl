@@ -45,12 +45,15 @@ object ImageWriterApp extends zio.App {
         )
 
     // Provide environment
-    val layer: ZLayer[Any, Nothing, ImageWriter.ImageWriter] =
-      ZLayer.succeed(
-        new ImageWriterServiceImpl()
-      )
-    val program: ZIO[Any, Nothing, Unit] =
-      ret.provideLayer(layer ++ console.Console.live)
+    val layer: ZLayer[
+      Any,
+      Nothing,
+      ImageWriter.ImageWriter with console.Console
+    ] = ZLayer.succeed[ImageWriter.Service](
+      new ImageWriterServiceImpl()
+    ) ++ console.Console.live
+
+    val program: ZIO[Any, Nothing, Unit] = ret.provideLayer(layer)
     program.exitCode
   }
 
