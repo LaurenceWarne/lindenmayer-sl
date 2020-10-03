@@ -22,16 +22,17 @@ object LindenmayerRecipeDecoder {
     }
   }
 
-  implicit val ruleTranslatorDecoder: Decoder[RuleTranslation] =
-    Decoder.decodeString.emapTry { str =>
-      val intTry: Try[Int] = Try(str.toInt)
-      intTry.isSuccess match {
-        case false if str == "forward" => Try(Forward)
-        case _                         => intTry.map(Turn(_))
+  implicit val decodeRuleTranslation: Decoder[RuleTranslation] =
+    new Decoder[RuleTranslation] {
+      final def apply(c: HCursor): Decoder.Result[RuleTranslation] = {
+        val st: Decoder.Result[String] = c.downField("move").as[String]
+        if (st.getOrElse("").toLowerCase == "forward")
+          st.map(st => RuleTranslation.Forward)
+        else c.downField("turn").as[Int].map(RuleTranslation.Turn(_))
       }
     }
 
-  val decodeLindenmayerRecipe: Decoder[LindenmayerRecipe] =
+  implicit val decodeLindenmayerRecipe: Decoder[LindenmayerRecipe] =
     new Decoder[LindenmayerRecipe] {
       final def apply(c: HCursor): Decoder.Result[LindenmayerRecipe] =
         for {

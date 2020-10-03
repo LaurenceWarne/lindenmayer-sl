@@ -1,12 +1,13 @@
 package lindenmayer
 
 import ProductionRules.ProductionRules
-import RuleTranslator.{RuleTranslator, Forward, Turn}
+import RuleTranslation.{Forward, Turn}
+import RuleTranslator.RuleTranslator
 
 object Recipes {
   // See
   // https://en.wikipedia.org/wiki/L-system
-  val dragonCurve: ProductionRules = Map('X' -> "X+YF+", 'Y' → "-FX-Y")
+  val dragonCurve: ProductionRules = Map('X' -> "X+YF+", 'Y' -> "-FX-Y")
   val dragonCurveTranslator: RuleTranslator =
     Map('F' -> Forward, '+' -> Turn(270), '-' -> Turn(90))
   val dragonCurveInit: String = "FX"

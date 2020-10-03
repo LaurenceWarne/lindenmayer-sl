@@ -4,8 +4,11 @@ import weaver.SimpleIOSuite
 import json.LindenmayerRecipeDecoder._
 import lindenmayer.ProductionRules._
 import lindenmayer.RuleTranslator._
+import lindenmayer.RuleTranslation._
 import io.circe._
 import io.circe.parser._
+import io.circe.generic.auto._
+import io.circe.syntax._
 import io.circe.Json
 import lindenmayer.RuleTranslation
 
@@ -26,8 +29,59 @@ object LindenmayerRecipeDecoderSuite extends SimpleIOSuite {
     expect(charKeyDecoder.apply(json).isEmpty)
   }
 
-  pureTest("test can decode int into Turn translation") {
-    val json = "180"
-    expect(parser.decode[RuleTranslation](json) == Turn(180))
+  pureTest("test can decode valid LindenmayerRecipe") {
+    val json =
+      """
+        |{
+        |    "name": "dragon-curve",
+        |    "axiom": "FX",
+        |    "rules": {
+        |        "X": "X+YF+",
+        |        "Y": "-FX-Y"
+        |    },
+        |    "translator": {
+        |        "F": {"move": "Forward"},
+        |        "+": {"turn": 270},
+        |        "-": {"turn": 90}
+        |    }
+        |}
+    """.stripMargin
+    val expected = LindenmayerRecipe(
+      "dragon-curve",
+      "FX",
+      Map('X' -> "X+YF+", 'Y' -> "-FX-Y"),
+      Map('F' -> Forward, '+' -> Turn(270), '-' -> Turn(90))
+    )
+    expect(
+      parser
+        .decode[LindenmayerRecipe](json)
+        .right
+        .exists(
+          _.equals(
+            LindenmayerRecipe(
+              "dragon-curve",
+              "FX",
+              Map('X' -> "X+YF+", 'Y' -> "-FX-Y"),
+              Map('F' -> Forward, '+' -> Turn(270), '-' -> Turn(90))
+            )
+          )
+        )
+    )
   }
+
+  pureTest("test cannot decode incomplete LindenmayerRecipe") {
+    val json =
+      """
+        |{
+        |    "name": "dragon-curve",
+        |    "axiom": "FX",
+        |    "rules": {
+        |        "X": "X+YF+",
+        |        "Y": "-FX-Y"
+        |    },
+        |}
+    """.stripMargin
+    expect(parser.decode[LindenmayerRecipe](json).isLeft)
+  }
+
 }

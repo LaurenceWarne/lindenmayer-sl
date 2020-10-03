@@ -4,7 +4,7 @@ import lindenmayer.interpreters.Interpreter
 import lindenmayer.RuleTranslator.RuleTranslator
 import scala.collection.immutable.TreeSet
 import lindenmayer.RuleTranslation
-import lindenmayer.RuleTranslator.{Forward, Turn}
+import lindenmayer.RuleTranslation.{Forward, Turn}
 
 trait BaseInterpreter[C <: collection.immutable.Iterable[(Int, Int)]]
     extends Interpreter[C] {
@@ -22,21 +22,19 @@ trait BaseInterpreter[C <: collection.immutable.Iterable[(Int, Int)]]
     shape
       .map(translator.get(_))
       .flatten
-      .foldLeft(getInit)(
-        (tuple, trans) => {
-          val (travelled, position, angle) = tuple
-          trans match {
-            case Turn(degrees) =>
-              (travelled, position, math.floorMod(angle + degrees, 360))
-            case Forward => {
-              val nxtVector = vectorFromAngleFn(angle)
-              val nxtPos =
-                Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
-              (updatePosition(travelled, nxtPos), nxtPos, angle)
-            }
+      .foldLeft(getInit)((tuple, trans) => {
+        val (travelled, position, angle) = tuple
+        trans match {
+          case Turn(degrees) =>
+            (travelled, position, math.floorMod(angle + degrees, 360))
+          case Forward => {
+            val nxtVector = vectorFromAngleFn(angle)
+            val nxtPos =
+              Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
+            (updatePosition(travelled, nxtPos), nxtPos, angle)
           }
         }
-      )
+      })
       ._1
 }
 

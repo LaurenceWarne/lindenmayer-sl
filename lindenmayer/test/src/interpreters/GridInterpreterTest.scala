@@ -1,7 +1,7 @@
 package lindenmayer.interpreters
 
 import weaver.SimpleIOSuite
-import lindenmayer.RuleTranslator.{Forward, Turn}
+import lindenmayer.RuleTranslation.{Forward, Turn}
 import lindenmayer.RuleTranslator
 
 object GridInterpreterSuite extends SimpleIOSuite {

@@ -7,7 +7,7 @@ import lindenmayer.ProductionRules.ProductionRules
 import lindenmayer.Production.recurse
 import lindenmayer.interpreters.Interpreter
 import lindenmayer.interpreters.SetInterpreter
-import lindenmayer.RuleTranslator.{Forward, Turn}
+import lindenmayer.RuleTranslation.{Forward, Turn}
 import lindenmayer.Recipes._
 import zio._
 import java.io.IOException

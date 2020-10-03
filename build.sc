@@ -13,6 +13,12 @@ trait lindenmayerTest extends TestModule {
 object lindenmayer extends ScalaModule with ScalafmtModule {
   def scalaVersion = "2.13.1"
 
+  def ivyDeps =
+    Agg(
+      ivy"com.beachape::enumeratum:1.6.1",
+      ivy"com.beachape::enumeratum-circe:1.6.1"
+    )
+
   object test extends Tests with lindenmayerTest
 }
 
