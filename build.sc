@@ -16,9 +16,23 @@ object lindenmayer extends ScalaModule with ScalafmtModule {
   object test extends Tests with lindenmayerTest
 }
 
-object imagecmd extends ScalaModule with ScalafmtModule {
+object json extends ScalaModule with ScalafmtModule {
   def scalaVersion = "2.13.1"
   def moduleDeps = Seq(lindenmayer)
+  def ivyDeps =
+    Agg(
+      ivy"dev.zio::zio:1.0.0",
+      ivy"io.circe::circe-core:0.12.3",
+      ivy"io.circe::circe-generic:0.12.3",
+      ivy"io.circe::circe-parser:0.12.3"
+    )
+
+  object test extends Tests with lindenmayerTest
+}
+
+object imagecmd extends ScalaModule with ScalafmtModule {
+  def scalaVersion = "2.13.1"
+  def moduleDeps = Seq(lindenmayer, json)
   def ivyDeps =
     Agg(
       ivy"dev.zio::zio:1.0.0"
