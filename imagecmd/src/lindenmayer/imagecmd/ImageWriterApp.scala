@@ -9,52 +9,77 @@ import lindenmayer.interpreters.Interpreter
 import lindenmayer.interpreters.SetInterpreter
 import lindenmayer.RuleTranslation.{Forward, Turn}
 import lindenmayer.Recipes._
+import lindenmayer.json.core.RecipeReader
+import lindenmayer.json.core.RecipeReader._
+import lindenmayer.imagecmd.ImageWriter._
 import zio._
 import java.io.IOException
 import java.io.FileNotFoundException
+import lindenmayer.json.core.RecipeReaderJson
 
 object ImageWriterApp extends zio.App {
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] = {
-    val width = args.lift(1).map(_.toInt).getOrElse(3200)
-    val height = args.lift(2).map(_.toInt).getOrElse(1800)
-    val iterations = args.lift(3).map(_.toInt).getOrElse(21)
+    val recipeName = args.lift(1).getOrElse("dragon-curve")
+    val width = args.lift(2).map(_.toInt).getOrElse(3200)
+    val height = args.lift(3).map(_.toInt).getOrElse(1800)
+    val iterations = args.lift(4).map(_.toInt).getOrElse(21)
 
-    val pr: ProductionRules = dragonCurve
-    val shape: String = recurse(pr, iterations, dragonCurveInit)
-    val interpreter: Interpreter[Iterable[(Int, Int)]] = SetInterpreter(
-      width / 2,
-      height / 2,
-      90
-    )
-    val cellsToColour: Set[(Int, Int)] = interpreter
-      .interpret(
-        shape,
-        dragonCurveTranslator
-      )
-      .toSet
-    val img = getCenteredImage(cellsToColour, width, height)
-    val name: String = args.headOption.getOrElse("test.jpg")
-
-    val ret: ZIO[console.Console with ImageWriter.ImageWriter, Nothing, Unit] =
-      ZIO
-        .accessM[ImageWriter.ImageWriter](_.get.writeImage(img, name))
-        .foldM( // Folds to other effects, Fold() folds to values
-          e => console.putStrLn(s"Error writing to $name: $e"),
-          _ => console.putStrLn(s"Wrote to $name")
+    val prog: ZIO[
+      console.Console with system.System with ImageWriter with RecipeReader,
+      Nothing,
+      ExitCode
+    ] =
+      (for {
+        configFileOp <-
+          system
+            .env("HOME")
+            .map(op => op.map(_ + "/.config/lindenmayer-sl/recipes.json"))
+            .mapError(e => "Error reading HOME environment variable")
+        configFile <-
+          ZIO
+            .fromOption(configFileOp)
+            .mapError(e => "Error reading HOME environment variable")
+        recipes <-
+          ZIO
+            .accessM[RecipeReader](
+              _.get.readFile(configFile)
+            )
+            .mapError(e => s"Error reading recipes: $e")
+        recipe <-
+          ZIO
+            .fromOption(recipes.get(recipeName))
+            .mapError(e => s"Recipe '$recipeName' not found")
+        shape = recurse(recipe.rules, iterations, recipe.axiom)
+        interpreter = SetInterpreter(width / 2, height / 2, 90)
+        cellsToColour = interpreter.interpret(shape, recipe.translator)
+        img = getCenteredImage(cellsToColour, width, height)
+        name = args.headOption.getOrElse("test.jpg")
+        res <-
+          ZIO
+            .accessM[ImageWriter](_.get.writeImage(img, name))
+            .map(_ => s"Wrote to $name")
+            .mapError(e => s"Error writing to $name: $e")
+      } yield res)
+        .foldM(
+          e => console.putStrLn(e),
+          s => console.putStrLn(s)
         )
+        .exitCode
 
     // Provide environment
     val layer: ZLayer[
       Any,
       Nothing,
-      ImageWriter.ImageWriter with console.Console
+      ImageWriter with RecipeReader with console.Console with system.System
     ] = ZLayer.succeed[ImageWriter.Service](
       new ImageWriterServiceImpl()
-    ) ++ console.Console.live
+    ) ++ ZLayer.succeed[RecipeReader.Service](
+      new RecipeReaderJson()
+    ) ++ console.Console.live ++ system.System.live
 
-    val program: ZIO[Any, Nothing, Unit] = ret.provideLayer(layer)
-    program.exitCode
+    val program: ZIO[Any, Nothing, ExitCode] = prog.provideLayer(layer)
+    program
   }
 
   def getCenteredImage(
