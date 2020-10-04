@@ -1,7 +1,7 @@
-package imagecmd
+package lindenmayer.imagecmd
 
 import java.awt.image.BufferedImage
-import zio.{Has, Task, ZLayer, ZIO}
+import zio.{Has, Task, ZIO}
 
 /**
   * See https://zio.dev/docs/howto/howto_use_layers

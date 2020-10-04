@@ -15,8 +15,7 @@ object lindenmayer extends ScalaModule with ScalafmtModule {
 
   def ivyDeps =
     Agg(
-      ivy"com.beachape::enumeratum:1.6.1",
-      ivy"com.beachape::enumeratum-circe:1.6.1"
+      ivy"com.beachape::enumeratum:1.6.1"
     )
 
   object test extends Tests with lindenmayerTest

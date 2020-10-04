@@ -1,4 +1,4 @@
-package imagecmd
+package lindenmayer.imagecmd
 
 import java.io.File
 import javax.imageio.ImageIO

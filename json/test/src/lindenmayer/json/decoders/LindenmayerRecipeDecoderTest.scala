@@ -1,7 +1,7 @@
-package json
+package lindenmayer.json.decoders
 
 import weaver.SimpleIOSuite
-import json.LindenmayerRecipeDecoder._
+import lindenmayer.json.decoders.LindenmayerRecipeDecoder._
 import lindenmayer.ProductionRules._
 import lindenmayer.RuleTranslator._
 import lindenmayer.RuleTranslation._

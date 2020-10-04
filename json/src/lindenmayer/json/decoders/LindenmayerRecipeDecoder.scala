@@ -1,4 +1,4 @@
-package json
+package lindenmayer.json.decoders
 
 import scala.util.Try
 import io.circe.{Decoder, HCursor, Json}
