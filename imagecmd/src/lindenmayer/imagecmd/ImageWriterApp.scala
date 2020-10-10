@@ -31,21 +31,18 @@ object ImageWriterApp extends zio.App {
       ExitCode
     ] =
       (for {
-        configFileOp <-
+        configFile <-
           system
             .env("HOME")
-            .map(op => op.map(_ + "/.config/lindenmayer-sl/recipes.json"))
-            .mapError(e => "Error reading HOME environment variable")
-        configFile <-
-          ZIO
-            .fromOption(configFileOp)
+            .some
+            .map(_ + "/.config/lindenmayer-sl/recipes.json")
             .mapError(e => "Error reading HOME environment variable")
         recipes <-
           ZIO
             .accessM[RecipeReader](
               _.get.readFile(configFile)
             )
-            .mapError(e => s"Error reading recipes: $e")
+            .mapError(e => s"Error reading recipes: '$e'")
         recipe <-
           ZIO
             .fromOption(recipes.get(recipeName))
@@ -59,10 +56,10 @@ object ImageWriterApp extends zio.App {
           ZIO
             .accessM[ImageWriter](_.get.writeImage(img, name))
             .map(_ => s"Wrote to $name")
-            .mapError(e => s"Error writing to $name: $e")
+            .mapError(e => s"Error writing to $name: '$e'")
       } yield res)
         .foldM(
-          e => console.putStrLn(e),
+          e => console.putStrErr(e),
           s => console.putStrLn(s)
         )
         .exitCode

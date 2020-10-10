@@ -1,9 +1,10 @@
 package lindenmayer.imagecmd
 
 import java.io.File
+import scala.util.Try
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
-import zio.Task
+import zio.{Task, ZIO}
 
 class ImageWriterServiceImpl extends ImageWriter.Service {
 
@@ -11,5 +12,5 @@ class ImageWriterServiceImpl extends ImageWriter.Service {
       img: BufferedImage,
       fileName: String
   ): zio.Task[Unit] =
-    Task.effect(ImageIO.write(img, "jpg", new File(fileName)))
+    ZIO.fromTry(Try(ImageIO.write(img, "jpg", new File(fileName))))
 }
