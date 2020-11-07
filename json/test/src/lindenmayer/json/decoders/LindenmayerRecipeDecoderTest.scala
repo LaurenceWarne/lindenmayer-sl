@@ -1,7 +1,7 @@
 package lindenmayer.json.decoders
 
 import weaver.SimpleIOSuite
-import lindenmayer.json.decoders.LindenmayerRecipeDecoder._
+import lindenmayer.json.decoders.LindenmayerRecipeCodec._
 import lindenmayer.ProductionRules._
 import lindenmayer.RuleTranslator._
 import lindenmayer.RuleTranslation._
@@ -40,9 +40,9 @@ object LindenmayerRecipeDecoderSuite extends SimpleIOSuite {
         |        "Y": "-FX-Y"
         |    },
         |    "translator": {
-        |        "F": {"move": "Forward"},
-        |        "+": {"turn": 270},
-        |        "-": {"turn": 90}
+        |        "F": {"Forward": {}},
+        |        "+": {"Turn": {"degrees": 270}},
+        |        "-": {"Turn": {"degrees": 90}}
         |    }
         |}
     """.stripMargin

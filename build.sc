@@ -15,7 +15,8 @@ object lindenmayer extends ScalaModule with ScalafmtModule {
 
   def ivyDeps =
     Agg(
-      ivy"com.beachape::enumeratum:1.6.1"
+      ivy"com.beachape::enumeratum:1.6.1",
+      ivy"org.typelevel::cats-core:2.2.0"
     )
 
   object test extends Tests with lindenmayerTest
@@ -47,7 +48,7 @@ object imagecmd extends ScalaModule with ScalafmtModule {
     def ivyDeps =
       super.ivyDeps() ++ Agg(
         ivy"com.disneystreaming::weaver-zio:0.4.3",
-        ivy"com.disneystreaming::weaver-zio:0.5.0-RC2"
+        ivy"com.disneystreaming::weaver-zio:0.5.0"
       )
   }
 }

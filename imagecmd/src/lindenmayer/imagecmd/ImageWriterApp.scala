@@ -38,10 +38,8 @@ object ImageWriterApp extends zio.App {
             .map(_ + "/.config/lindenmayer-sl/recipes.json")
             .mapError(e => "Error reading HOME environment variable")
         recipes <-
-          ZIO
-            .accessM[RecipeReader](
-              _.get.readFile(configFile)
-            )
+          RecipeReader
+            .readFile(configFile)
             .mapError(e => s"Error reading recipes: '$e'")
         recipe <-
           ZIO

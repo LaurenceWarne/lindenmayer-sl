@@ -5,11 +5,36 @@ import lindenmayer.RuleTranslator.RuleTranslator
 import scala.collection.immutable.TreeSet
 import lindenmayer.RuleTranslation
 import lindenmayer.RuleTranslation.{Forward, Turn}
+/*
+import cats.Monoid
+import cats.Applicative
 
-trait BaseInterpreter[C <: collection.immutable.Iterable[(Int, Int)]]
-    extends Interpreter[C] {
+class MonoidBaseInterpreter[C[_]](
+    x: Int,
+    y: Int,
+    angle: Int = 0,
+    vectorFn: Int => (Int, Int) = GridInterpreter.getVector
+)(
+    implicit val applicative: Applicative[C],
+    implicit val monoid: Monoid[C[(Int, Int)]]
+) extends BaseInterpreter[C[(Int, Int)]] {
 
-  def getInit: (C, (Int, Int), Int)
+  def init: (C[(Int, Int)], (Int, Int), Int) =
+    (applicative.pure((x, y)), (x, y), angle)
+
+  override def updatePosition(
+      travelled: C[(Int, Int)],
+      newPosition: (Int, Int)
+  ) =
+    monoid.combine(travelled, applicative.pure(newPosition))
+
+  override def vectorFromAngleFn(angle: Int) = vectorFn(angle)
+}
+ */
+
+trait BaseInterpreter[C] extends Interpreter[C] {
+
+  def init: (C, (Int, Int), Int)
 
   def updatePosition(travelled: C, newPosition: (Int, Int)): C
 
@@ -20,9 +45,8 @@ trait BaseInterpreter[C <: collection.immutable.Iterable[(Int, Int)]]
       translator: RuleTranslator
   ): C =
     shape
-      .map(translator.get(_))
-      .flatten
-      .foldLeft(getInit)((tuple, trans) => {
+      .flatMap(translator.get(_))
+      .foldLeft(init)((tuple, trans) => {
         val (travelled, position, angle) = tuple
         trans match {
           case Turn(degrees) =>
@@ -30,7 +54,7 @@ trait BaseInterpreter[C <: collection.immutable.Iterable[(Int, Int)]]
           case Forward => {
             val nxtVector = vectorFromAngleFn(angle)
             val nxtPos =
-              Tuple2(position._1 + nxtVector._1, position._2 + nxtVector._2)
+              (position._1 + nxtVector._1, position._2 + nxtVector._2)
             (updatePosition(travelled, nxtPos), nxtPos, angle)
           }
         }
@@ -45,14 +69,13 @@ case class ListInterpreter(
     vectorFn: Int => (Int, Int) = GridInterpreter.getVector
 ) extends BaseInterpreter[List[(Int, Int)]] {
 
-  override def getInit: (List[(Int, Int)], (Int, Int), Int) =
+  override def init: (List[(Int, Int)], (Int, Int), Int) =
     (List((x, y)), (x, y), angle)
 
   override def updatePosition(
       travelled: List[(Int, Int)],
       newPosition: (Int, Int)
-  ) =
-    travelled :+ newPosition
+  ) = travelled :+ newPosition
 
   override def vectorFromAngleFn(angle: Int) = vectorFn(angle)
 }
@@ -64,14 +87,13 @@ case class SetInterpreter(
     vectorFn: Int => (Int, Int) = GridInterpreter.getVector
 ) extends BaseInterpreter[Set[(Int, Int)]] {
 
-  def getInit: (Set[(Int, Int)], (Int, Int), Int) =
+  def init: (Set[(Int, Int)], (Int, Int), Int) =
     (Set((x, y)), (x, y), angle)
 
   override def updatePosition(
       travelled: Set[(Int, Int)],
       newPosition: (Int, Int)
-  ) =
-    travelled + newPosition
+  ) = travelled + newPosition
 
   override def vectorFromAngleFn(angle: Int) = vectorFn(angle)
 }
