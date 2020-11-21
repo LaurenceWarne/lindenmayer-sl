@@ -3,13 +3,13 @@ pipeline {
     stages {
 	stage('Compile') {
 	    steps {
-		sh '/usr/bin/local/mill _.compile'
+		sh '/usr/local/bin/mill _.compile'
 	    }
 	}
 
         stage('Test') {
             steps {
-                sh '/usr/bin/local/mill _.test'
+                sh '/usr/local/bin/mill _.test'
             }
         }
     }
