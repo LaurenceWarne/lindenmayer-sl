@@ -17,6 +17,10 @@ final case class LindenmayerRecipe(
 
 object LindenmayerRecipeCodec {
 
+  // Codecs
+
+  implicit val ruleTranslationCodec = deriveCodec[RuleTranslation]
+
   // Decoders
 
   implicit val charKeyDecoder: KeyDecoder[Char] = new KeyDecoder[Char] {
@@ -28,11 +32,7 @@ object LindenmayerRecipeCodec {
   implicit val productionRulesDecoder: Decoder[ProductionRules] =
     Decoder.decodeMap[Char, String]
 
-  implicit val ruleTranslationDecoder = deriveDecoder[RuleTranslation]
-
   implicit val ruleTranslatorDecoder = Decoder.decodeMap[Char, RuleTranslation]
-
-  implicit val lindenmayerRecipeDecoder = deriveDecoder[LindenmayerRecipe]
 
   // Encoders
 
@@ -43,9 +43,9 @@ object LindenmayerRecipeCodec {
   implicit val productionRulesEncoder: Encoder[ProductionRules] =
     Encoder.encodeMap[Char, String]
 
-  implicit val ruleTranslationEncoder = deriveEncoder[RuleTranslation]
-
   implicit val ruleTranslatorEncoder = Encoder.encodeMap[Char, RuleTranslation]
 
-  implicit val lindenmayerRecipeEncoder = deriveEncoder[LindenmayerRecipe]
+  // Final codec
+
+  implicit val lindenmayerRecipeCodec = deriveCodec[LindenmayerRecipe]
 }
