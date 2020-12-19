@@ -1,22 +1,11 @@
 package lindenmayer.imagecmd
 
 import java.awt.image.BufferedImage
+import cats.MonadError
 import zio.{Has, Task, ZIO}
 
-/**
-  * See https://zio.dev/docs/howto/howto_use_layers
-  */
-object ImageWriter {
-
-  type ImageWriter = Has[ImageWriter.Service]
-
-  trait Service {
-    def writeImage(img: BufferedImage, fileName: String): Task[Unit]
-  }
-
-  def writeImage(
-      img: BufferedImage,
-      fileName: String
-  ): ZIO[ImageWriter, Throwable, Unit] =
-    ZIO.accessM(_.get.writeImage(img, fileName))
+trait ImageWriter[F[_]] {
+  def writeImage(img: BufferedImage, fileName: String)(implicit
+      E: MonadError[F, Throwable]
+  ): F[Unit]
 }

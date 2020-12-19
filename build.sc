@@ -43,7 +43,8 @@ object imagecmd extends ScalaModule with ScalafmtModule {
   def moduleDeps = Seq(lindenmayer, json)
   def ivyDeps =
     Agg(
-      ivy"dev.zio::zio:1.0.0"
+      ivy"dev.zio::zio:1.0.0",
+      ivy"dev.zio::zio-interop-cats:2.2.0.1"
     )
 
   object test extends Tests with lindenmayerTest {

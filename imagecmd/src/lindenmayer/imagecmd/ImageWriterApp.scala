@@ -11,11 +11,11 @@ import lindenmayer.RuleTranslation.{Forward, Turn}
 import lindenmayer.Recipes._
 import lindenmayer.json.core.RecipeReader
 import lindenmayer.json.core.RecipeReader._
-import lindenmayer.imagecmd.ImageWriter._
-import zio._
-import java.io.IOException
-import java.io.FileNotFoundException
 import lindenmayer.json.core.RecipeReaderJson
+import lindenmayer.imagecmd.ImageWriterZIO._
+import lindenmayer.imagecmd.ImageWriterServiceZIOImpl
+import zio.interop.catz.taskConcurrentInstance
+import zio._
 
 object ImageWriterApp extends zio.App {
 
@@ -26,7 +26,7 @@ object ImageWriterApp extends zio.App {
     val iterations = args.lift(4).map(_.toInt).getOrElse(21)
 
     val prog: ZIO[
-      console.Console with system.System with ImageWriter with RecipeReader,
+      console.Console with system.System with ImageWriterZIO with RecipeReader,
       Nothing,
       ExitCode
     ] =
@@ -51,8 +51,8 @@ object ImageWriterApp extends zio.App {
         img = getCenteredImage(cellsToColour, width, height)
         name = args.headOption.getOrElse("test.jpg")
         res <-
-          ZIO
-            .accessM[ImageWriter](_.get.writeImage(img, name))
+          ImageWriterZIO
+            .writeImage(img, name)
             .map(_ => s"Wrote to $name")
             .mapError(e => s"Error writing to $name: '$e'")
       } yield res)
@@ -66,10 +66,8 @@ object ImageWriterApp extends zio.App {
     val layer: ZLayer[
       Any,
       Nothing,
-      ImageWriter with RecipeReader with console.Console with system.System
-    ] = ZLayer.succeed[ImageWriter.Service](
-      new ImageWriterServiceImpl()
-    ) ++ ZLayer.succeed[RecipeReader.Service](
+      ImageWriterZIO with RecipeReader with console.Console with system.System
+    ] = imageWriterZIOLayer ++ ZLayer.succeed[RecipeReader.Service](
       new RecipeReaderJson()
     ) ++ console.Console.live ++ system.System.live
 
