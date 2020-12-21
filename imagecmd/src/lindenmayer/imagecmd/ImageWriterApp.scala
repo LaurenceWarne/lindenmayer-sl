@@ -13,7 +13,7 @@ import lindenmayer.json.core.RecipeReader
 import lindenmayer.json.core.RecipeReader._
 import lindenmayer.json.core.RecipeReaderJson
 import lindenmayer.imagecmd.ImageWriterZIO._
-import lindenmayer.imagecmd.ImageWriterServiceZIOImpl
+import lindenmayer.imagecmd.ImageWriterServiceImpl
 import zio.interop.catz.taskConcurrentInstance
 import zio._
 
